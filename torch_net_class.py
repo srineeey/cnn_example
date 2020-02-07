@@ -24,10 +24,11 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.net_struct = net_struct
         self.input_size = input_size
-        
+        #self.output_size = net_struct[-1]["layer_pars"]["out_features"]
         #self.input_size = net_struct[0]["layer_pars"]["in_features"]
-        self.output_size = net_struct[-1]["layer_pars"]["out_features"]
+        
         self.batch_size = 1
+        
 
         
         #self.fc = []
@@ -49,6 +50,8 @@ class Net(nn.Module):
         self.init_weights(torch.nn.init.xavier_normal_)
         
         self.layer_sizes = self.calc_layer_sizes()
+        
+        self.output_size = self.layer_sizes[-1]
 
 
     """
@@ -135,14 +138,15 @@ class Net(nn.Module):
                 for d in range(len(kernel_shape)):
                     prev_layer_l = int(layer_sizes[-1][d+1])
                     kernel_l = int(kernel_shape[d])
-                    new_layer_size.append( (prev_layer_l - kernel_l)//stride + 1 )
+                    #new_layer_size.append(int( (prev_layer_l - kernel_l) + 1 )//stride)
+                    new_layer_size.append(int( (prev_layer_l - kernel_l)//stride + 1 ))
 
                 #new_layer_size = [(layer_sizes[-1][d+1] - kernel_shape[d])/stride + 1 for d in range(len(kernel_shape))]
 
                 prev_channels = layer_sizes[-1][0]
                 new_layer_size = [prev_channels] + new_layer_size
                 
-            elif net_struct[i]["type"] == nn.BatchNorm1d or net_struct[i]["type"] == nn.Dropout:
+            elif net_struct[i]["type"] == nn.BatchNorm1d or net_struct[i]["type"] == nn.Dropout or net_struct[i]["type"] == nn.Softmax:
                 new_layer_size = layer_sizes[-1]
 
             layer_sizes.append(new_layer_size)
